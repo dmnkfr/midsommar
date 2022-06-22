@@ -6,11 +6,8 @@ library(ggallin)
 library(showtext)
 
 ## Get Fonts 
-font_add_google(name = "Teko", family = "teko")
 font_add_google(name = "Lobster", family = "lobster")
 font_add_google(name = "Amatic SC", family = "amatic")
-font_add_google(name = "Bebas Neue", family = "bebas")
-font_add_google(name = "Righteous", family = "righteous")
 showtext_auto()
 
 ## Load and Tidy Data
