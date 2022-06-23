@@ -10,6 +10,18 @@ font_add_google(name = "Lobster", family = "lobster")
 font_add_google(name = "Amatic SC", family = "amatic")
 showtext_auto()
 
+## Load and create vector for midsummer dates
+dates <- read.table("midsommar_datum.txt")
+
+dates <- dates %>% 
+  mutate(Date = as.Date(paste0(V1, "-06-", V3-1), 
+                        format = "%Y-%m-%d")) %>% 
+  select(Date) %>% 
+  ## Until 1952 midsummer was always celebrated on June 23rd
+  add_row(Date = as.Date(paste0(seq(1859, 1952, 1), "-06-", "23"), 
+                         format = "%Y-%m-%d")) %>% 
+  arrange(Date)
+
 ## Load and Tidy Data
 rain <- read.csv(
   file = "smhi-opendata_rain.csv",
@@ -21,11 +33,11 @@ rain <- read.csv(
     Date = Representativt.dygn,
     Precipitation = Nederbördsmängd
   ) %>%
-  filter(str_detect(Date, "06-23")) %>%
   mutate(
     Date = as.Date(Date, format = "%Y-%m-%d"),
     Precipitation = Precipitation * -1
   ) %>%
+  filter(Date %in% dates$Date) %>% 
   select(Date, Precipitation)
 
 
@@ -41,8 +53,8 @@ temp <- read.csv(
     Date = Datum,
     Temperature = Lufttemperatur
   ) %>%
-  filter(str_detect(Date, "06-23")) %>%
   mutate(Date = as.Date(Date, format = "%Y-%m-%d")) %>%
+  filter(Date %in% dates$Date) %>% 
   select(Date, Time, Temperature) %>%
   group_by(Date) %>%
   summarise(Mean_Temperature = round(mean(Temperature), 2))
@@ -71,7 +83,7 @@ p <- ggplot(
   )) +
   scale_x_discrete(breaks = seq(1860, 2020, 22)) +
   labs(
-    title = "Weather on Midsummer in Stockholm",
+    title = "Weather on Midsummer's Eve in Stockholm",
     subtitle = "1860-2020",
     caption = "Data Source : SMHI | Visualization: Dominik Freunberger"
   ) +
@@ -126,9 +138,9 @@ p <- ggplot(
   alpha = 0.1
   ) +
   geom_text(aes(
-    x = 114,
-    y = 26,
-    label = "26°C in 1973"
+    x = 110,
+    y = 27,
+    label = "26°C in 1970"
   ),
   family = "amatic",
   colour = "white",
@@ -165,5 +177,5 @@ p <- ggplot(
       margin = margin(t = 5, b = 5)
     )
   )
-
+p
 ggsave("glad_midsommar.png", p, dpi = 320, width = 12, height = 6)
